@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import './index.css';
 
 /* ===== ANIMATION VARIANTS (enterprise stagger system) ===== */
@@ -197,14 +197,16 @@ const Footer = () => (
 
 /* ===== FLOATING PARTICLES ===== */
 const FloatingParticles = () => {
-  const particles = Array.from({ length: 20 }, (_, i) => ({
-    id: i,
-    left: `${Math.random() * 100}%`,
-    delay: Math.random() * 12,
-    duration: 10 + Math.random() * 15,
-    size: 1.5 + Math.random() * 3,
-    color: ['var(--color-bright-blue)', 'var(--color-plum)', 'var(--color-pink-sand)', 'var(--color-teal)'][Math.floor(Math.random() * 4)]
-  }));
+  const particles = React.useMemo(() => 
+    Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      delay: Math.random() * 12,
+      duration: 10 + Math.random() * 15,
+      size: 1.5 + Math.random() * 3,
+      color: ['var(--color-bright-blue)', 'var(--color-plum)', 'var(--color-pink-sand)', 'var(--color-teal)'][Math.floor(Math.random() * 4)]
+    })), []);
+
   return (
     <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
       {particles.map(p => (
@@ -216,14 +218,16 @@ const FloatingParticles = () => {
 
 /* ===== TWINKLING STARS ===== */
 const TwinklingStars = () => {
-  const stars = Array.from({ length: 60 }, (_, i) => ({
-    id: i,
-    left: `${Math.random() * 100}%`,
-    top: `${Math.random() * 100}%`,
-    size: 1 + Math.random() * 2.5,
-    delay: Math.random() * 8,
-    duration: 2 + Math.random() * 4,
-  }));
+  const stars = React.useMemo(() => 
+    Array.from({ length: 60 }, (_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      size: 1 + Math.random() * 2.5,
+      delay: Math.random() * 8,
+      duration: 2 + Math.random() * 4,
+    })), []);
+
   return (
     <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
       {stars.map(s => (
@@ -397,6 +401,31 @@ function App() {
       }]);
     } finally {
       setIsExecuting(false);
+    }
+  };
+
+  const saveSequence = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/engine/sequence`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(testSequence)
+      });
+      const result = await response.text();
+      // Using a simple toast notification would be better, but console log for bridge verification
+      console.log(`[API] ${result}`);
+      setLogs(prev => [...prev, {
+        time: new Date().toLocaleTimeString(),
+        type: 'info',
+        text: `[SYSTEM] ${result}`
+      }]);
+    } catch (error) {
+      console.error('Error saving sequence:', error);
+      setLogs(prev => [...prev, {
+        time: new Date().toLocaleTimeString(),
+        type: 'fail',
+        text: `[ERROR] Save failed: ${error.message}`
+      }]);
     }
   };
 
@@ -1173,7 +1202,14 @@ function App() {
                           <h3 style={{ color: 'var(--color-teal)' }}>Test Canvas: Custom Flow</h3>
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <motion.button whileHover={{ scale: 1.05 }} className="btn" onClick={() => setTestSequence([])}>Clear</motion.button>
-                            <motion.button whileHover={{ scale: 1.05 }} className="btn btn-primary" style={{ background: 'linear-gradient(135deg, var(--color-plum), var(--color-teal))' }}>Save Suite</motion.button>
+                            <motion.button 
+                              whileHover={{ scale: 1.05 }} 
+                              onClick={saveSequence}
+                              className="btn btn-primary" 
+                              style={{ background: 'linear-gradient(135deg, var(--color-plum), var(--color-teal))' }}
+                            >
+                              Save Suite
+                            </motion.button>
                           </div>
                         </div>
 

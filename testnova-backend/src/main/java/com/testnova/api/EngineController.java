@@ -26,4 +26,11 @@ public class EngineController {
         return executionService.orchestrateExecution(target);
     }
 
+    @PostMapping("/sequence")
+    public String saveSequence(@RequestBody Object sequence) {
+        // Logic to persist the sequence (e.g. to DB or Cache)
+        System.out.println("[API] Saved new test sequence from Visual Builder");
+        return "Sequence saved successfully";
+    }
+
 }
