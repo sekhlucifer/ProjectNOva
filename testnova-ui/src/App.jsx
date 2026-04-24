@@ -272,9 +272,10 @@ const GlassPanel = ({ children, style, className = '', ...props }) => {
 };
 
 /* ===== ANDROID ROBOT ===== */
-const AndroidRobot = () => {
+const AndroidRobot = ({ onClick }) => {
   return (
     <motion.div
+      onClick={onClick}
       style={{ display: 'flex', justifyContent: 'center', padding: '1rem', cursor: 'pointer' }}
       whileHover={{
         y: [0, -25, 0, -25, 0],
@@ -458,6 +459,34 @@ function App() {
       alert(`AI generation failed: ${error.message}`);
     } finally {
       setIsGeneratingBdd(false);
+    }
+  };
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    { role: 'nova', text: "Hi! I'm Nova. I'm here to help you use TestNova with confidence! How can I assist you today?" }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatTyping, setIsChatTyping] = useState(false);
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim()) return;
+    const userMsg = { role: 'user', text: chatInput };
+    setChatMessages(prev => [...prev, userMsg]);
+    setChatInput('');
+    setIsChatTyping(true);
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/ai/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: chatInput
+      });
+      const result = await response.text();
+      setChatMessages(prev => [...prev, { role: 'nova', text: result }]);
+    } catch (error) {
+      setChatMessages(prev => [...prev, { role: 'nova', text: "Oops, I lost connection to my brain! Please make sure the backend is running." }]);
+    } finally {
+      setIsChatTyping(false);
     }
   };
 
@@ -1029,8 +1058,48 @@ function App() {
                 ))}
               </nav>
 
-              <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column' }}>
-                <AndroidRobot />
+              <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                {isChatOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20, scale: 0.8 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    style={{ position: 'absolute', bottom: '100%', left: '100%', width: '300px', marginLeft: '1rem', zIndex: 1000 }}
+                  >
+                    <GlassPanel style={{ padding: '1.5rem', background: 'var(--bg-surface)', border: '1px solid var(--color-teal)' }}>
+                      <h4 style={{ margin: '0 0 1rem 0', color: 'var(--color-teal)', display: 'flex', justifyContent: 'space-between' }}>
+                        Nova Assistant
+                        <span onClick={() => setIsChatOpen(false)} style={{ cursor: 'pointer' }}>{"\u2715"}</span>
+                      </h4>
+                      <div style={{ height: '200px', overflowY: 'auto', marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {chatMessages.map((msg, i) => (
+                          <div key={i} style={{ 
+                            alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                            background: msg.role === 'user' ? 'rgba(81, 226, 245, 0.1)' : 'rgba(168, 85, 247, 0.1)',
+                            padding: '0.5rem 0.8rem',
+                            borderRadius: '10px',
+                            maxWidth: '90%',
+                            fontSize: '0.85rem'
+                          }}>
+                            {msg.text}
+                          </div>
+                        ))}
+                        {isChatTyping && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Nova is thinking...</div>}
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <input 
+                          className="input-field" 
+                          value={chatInput} 
+                          onChange={(e) => setChatInput(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+                          placeholder="Ask anything..." 
+                          style={{ padding: '0.4rem', fontSize: '0.85rem' }} 
+                        />
+                        <button onClick={sendChatMessage} className="btn btn-primary" style={{ padding: '0.4rem 0.8rem' }}>{"\u27A4"}</button>
+                      </div>
+                    </GlassPanel>
+                  </motion.div>
+                )}
+                <AndroidRobot onClick={() => setIsChatOpen(!isChatOpen)} />
                 <button onClick={() => { setIsAuthenticated(false); setCurrentView('landing'); }} className="btn" style={{ width: '100%', justifyContent: 'flex-start', background: 'transparent', borderColor: 'transparent', marginTop: '1rem' }}>
                   <span>{"\uD83D\uDEAA"}</span> Sign Out
                 </button>
