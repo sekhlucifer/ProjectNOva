@@ -195,47 +195,42 @@ const Footer = () => (
   </footer>
 );
 
-/* ===== FLOATING PARTICLES ===== */
-const FloatingParticles = () => {
-  const particles = React.useMemo(() => 
-    Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      left: `${Math.random() * 100}%`,
-      delay: Math.random() * 12,
-      duration: 10 + Math.random() * 15,
-      size: 1.5 + Math.random() * 3,
-      color: ['var(--color-bright-blue)', 'var(--color-plum)', 'var(--color-pink-sand)', 'var(--color-teal)'][Math.floor(Math.random() * 4)]
-    })), []);
+/* ===== STATIC ANIMATION DATA (Satisfies React Purity Rules) ===== */
+const STATIC_PARTICLES = Array.from({ length: 20 }, (_, i) => ({
+  id: i,
+  left: `${Math.random() * 100}%`,
+  delay: Math.random() * 12,
+  duration: 10 + Math.random() * 15,
+  size: 1.5 + Math.random() * 3,
+  color: ['var(--color-bright-blue)', 'var(--color-plum)', 'var(--color-pink-sand)', 'var(--color-teal)'][Math.floor(Math.random() * 4)]
+}));
 
-  return (
-    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-      {particles.map(p => (
-        <div key={p.id} className="particle" style={{ left: p.left, bottom: '-10px', width: p.size, height: p.size, background: p.color, animationDelay: `${p.delay}s`, animationDuration: `${p.duration}s`, opacity: 0.4 }} />
-      ))}
-    </div>
-  );
-};
+const STATIC_STARS = Array.from({ length: 60 }, (_, i) => ({
+  id: i,
+  left: `${Math.random() * 100}%`,
+  top: `${Math.random() * 100}%`,
+  size: 1 + Math.random() * 2.5,
+  delay: Math.random() * 8,
+  duration: 2 + Math.random() * 4,
+}));
+
+/* ===== FLOATING PARTICLES ===== */
+const FloatingParticles = () => (
+  <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+    {STATIC_PARTICLES.map(p => (
+      <div key={p.id} className="particle" style={{ left: p.left, bottom: '-10px', width: p.size, height: p.size, background: p.color, animationDelay: `${p.delay}s`, animationDuration: `${p.duration}s`, opacity: 0.4 }} />
+    ))}
+  </div>
+);
 
 /* ===== TWINKLING STARS ===== */
-const TwinklingStars = () => {
-  const stars = React.useMemo(() => 
-    Array.from({ length: 60 }, (_, i) => ({
-      id: i,
-      left: `${Math.random() * 100}%`,
-      top: `${Math.random() * 100}%`,
-      size: 1 + Math.random() * 2.5,
-      delay: Math.random() * 8,
-      duration: 2 + Math.random() * 4,
-    })), []);
-
-  return (
-    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-      {stars.map(s => (
-        <div key={s.id} className="star" style={{ left: s.left, top: s.top, width: s.size, height: s.size, animationDelay: `${s.delay}s`, animationDuration: `${s.duration}s` }} />
-      ))}
-    </div>
-  );
-};
+const TwinklingStars = () => (
+  <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+    {STATIC_STARS.map(s => (
+      <div key={s.id} className="star" style={{ left: s.left, top: s.top, width: s.size, height: s.size, animationDelay: `${s.delay}s`, animationDuration: `${s.duration}s` }} />
+    ))}
+  </div>
+);
 
 /* ===== SPOTLIGHT GLASS PANEL ===== */
 const GlassPanel = ({ children, style, className = '', ...props }) => {
