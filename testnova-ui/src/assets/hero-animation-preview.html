@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TestNova Hero — Plates + Thunder Preview</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a1a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .scene {
+      position: relative;
+      width: 500px;
+      height: 500px;
+    }
+
+    /* ═══ TOP PLATE ═══ */
+    .plate-top {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      animation: pullTop 3s ease-in-out infinite alternate;
+      filter: drop-shadow(0 -8px 25px rgba(81, 226, 245, 0.25));
+      z-index: 3;
+    }
+
+    /* ═══ BOTTOM PLATE ═══ */
+    .plate-bottom {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      animation: pullBottom 3s ease-in-out infinite alternate;
+      filter: drop-shadow(0 8px 30px rgba(168, 85, 247, 0.4));
+      z-index: 2;
+    }
+
+    @keyframes pullTop {
+      0%   { transform: translate(-50%, -52%) translateY(0px); }
+      100% { transform: translate(-50%, -52%) translateY(-55px); }
+    }
+
+    @keyframes pullBottom {
+      0%   { transform: translate(-50%, -48%) translateY(0px); }
+      100% { transform: translate(-50%, -48%) translateY(55px); }
+    }
+
+    /* ═══ LIGHTNING CANVAS ═══ */
+    .lightning-container {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+      height: 300px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ═══ GLOW ORB between plates ═══ */
+    .energy-core {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 80px;
+      height: 30px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(81, 226, 245, 0.6) 0%, rgba(168, 85, 247, 0.3) 40%, transparent 70%);
+      animation: coreGlow 1.5s ease-in-out infinite alternate;
+      z-index: 4;
+    }
+
+    @keyframes coreGlow {
+      0%   { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+      50%  { opacity: 1;   transform: translate(-50%, -50%) scale(1.4); }
+      100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    /* ═══ Sparks — tiny dots ═══ */
+    .spark {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 6;
+      animation: sparkFloat 1s ease-out forwards;
+    }
+
+    @keyframes sparkFloat {
+      0%   { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0) translateY(-30px); }
+    }
+
+    /* ═══ Label ═══ */
+    .label {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.4);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div class="scene">
+
+    <!-- TOP PLATE (light/wireframe) -->
+    <svg class="plate-top" width="320" height="200" viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Top face -->
+      <path d="M 160 20 L 290 90 L 160 160 L 30 90 Z" fill="rgba(20, 20, 40, 0.5)" stroke="rgba(81, 226, 245, 0.6)" stroke-width="1.5" rx="20" />
+      <!-- Rounded corners illusion -->
+      <path d="M 160 20 Q 180 20, 290 90" stroke="rgba(81, 226, 245, 0.4)" stroke-width="1" fill="none" />
+      <path d="M 160 20 Q 140 20, 30 90" stroke="rgba(81, 226, 245, 0.4)" stroke-width="1" fill="none" />
+      <!-- Edge highlight -->
+      <path d="M 160 25 L 285 90 L 160 155 L 35 90 Z" fill="none" stroke="rgba(81, 226, 245, 0.15)" stroke-width="0.5" />
+      <!-- Top surface glow lines -->
+      <line x1="80" y1="65" x2="240" y2="65" stroke="rgba(81, 226, 245, 0.08)" stroke-width="0.5" transform="rotate(30, 160, 90)" />
+      <line x1="80" y1="90" x2="240" y2="90" stroke="rgba(81, 226, 245, 0.06)" stroke-width="0.5" transform="rotate(30, 160, 90)" />
+      <line x1="80" y1="115" x2="240" y2="115" stroke="rgba(81, 226, 245, 0.04)" stroke-width="0.5" transform="rotate(30, 160, 90)" />
+      <!-- Side thickness -->
+      <path d="M 30 90 L 30 100 L 160 170 L 290 100 L 290 90" fill="rgba(81, 226, 245, 0.05)" stroke="rgba(81, 226, 245, 0.3)" stroke-width="1" />
+      <path d="M 160 160 L 160 170" stroke="rgba(81, 226, 245, 0.3)" stroke-width="1" />
+      <!-- Inner circuit pattern -->
+      <circle cx="160" cy="90" r="20" fill="none" stroke="rgba(81, 226, 245, 0.12)" stroke-width="0.5" />
+      <circle cx="160" cy="90" r="35" fill="none" stroke="rgba(81, 226, 245, 0.08)" stroke-width="0.5" stroke-dasharray="4 4" />
+    </svg>
+
+    <!-- BOTTOM PLATE (purple gradient edge) -->
+    <svg class="plate-bottom" width="320" height="200" viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="purpleEdge" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#7c3aed" />
+          <stop offset="50%" stop-color="#a855f7" />
+          <stop offset="100%" stop-color="#6d28d9" />
+        </linearGradient>
+        <linearGradient id="purpleFace" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="rgba(30, 15, 60, 0.8)" />
+          <stop offset="100%" stop-color="rgba(50, 20, 80, 0.6)" />
+        </linearGradient>
+      </defs>
+      <!-- Side thickness — the purple edge -->
+      <path d="M 30 80 L 30 100 L 160 170 L 290 100 L 290 80" fill="url(#purpleEdge)" opacity="0.9" />
+      <path d="M 160 150 L 160 170" stroke="rgba(168, 85, 247, 0.5)" stroke-width="1" />
+      <!-- Top face -->
+      <path d="M 160 10 L 290 80 L 160 150 L 30 80 Z" fill="url(#purpleFace)" stroke="rgba(168, 85, 247, 0.5)" stroke-width="1.5" />
+      <!-- Inner face highlight -->
+      <path d="M 160 18 L 280 80 L 160 142 L 40 80 Z" fill="none" stroke="rgba(168, 85, 247, 0.15)" stroke-width="0.5" />
+      <!-- Surface glow lines -->
+      <line x1="80" y1="55" x2="240" y2="55" stroke="rgba(168, 85, 247, 0.06)" stroke-width="0.5" transform="rotate(30, 160, 80)" />
+      <line x1="80" y1="80" x2="240" y2="80" stroke="rgba(168, 85, 247, 0.05)" stroke-width="0.5" transform="rotate(30, 160, 80)" />
+      <line x1="80" y1="105" x2="240" y2="105" stroke="rgba(168, 85, 247, 0.04)" stroke-width="0.5" transform="rotate(30, 160, 80)" />
+      <!-- Inner circuit pattern -->
+      <circle cx="160" cy="80" r="20" fill="none" stroke="rgba(168, 85, 247, 0.15)" stroke-width="0.5" />
+      <circle cx="160" cy="80" r="35" fill="none" stroke="rgba(168, 85, 247, 0.1)" stroke-width="0.5" stroke-dasharray="4 4" />
+      <!-- Corner glows -->
+      <circle cx="160" cy="10" r="4" fill="rgba(168, 85, 247, 0.3)">
+        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="290" cy="80" r="3" fill="rgba(168, 85, 247, 0.2)">
+        <animate attributeName="opacity" values="0.2;0.6;0.2" dur="2s" repeatCount="indefinite" begin="0.5s" />
+      </circle>
+    </svg>
+
+    <!-- ENERGY CORE GLOW -->
+    <div class="energy-core"></div>
+
+    <!-- LIGHTNING CANVAS -->
+    <canvas class="lightning-container" id="lightningCanvas" width="400" height="300"></canvas>
+
+    <div class="label">Preview — TestNova Hero Animation</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('lightningCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    const energyCore = document.querySelector('.energy-core');
+
+    // ── Track animation progress to know plate separation ──
+    // Animation: 3s ease-in-out infinite alternate, max offset = 55px each plate = 110px total
+    const ANIM_DURATION = 3000; // ms
+    const MAX_SEPARATION = 110; // total px gap at max
+    const SPARK_THRESHOLD = 0.25; // only spark when >25% open
+    let animStart = performance.now();
+
+    // ease-in-out cubic approximation
+    function easeInOut(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function getSeparation(now) {
+      let elapsed = (now - animStart) % (ANIM_DURATION * 2); // full cycle = open + close
+      let t;
+      if (elapsed < ANIM_DURATION) {
+        // opening phase
+        t = elapsed / ANIM_DURATION;
+      } else {
+        // closing phase
+        t = 1 - (elapsed - ANIM_DURATION) / ANIM_DURATION;
+      }
+      return easeInOut(Math.max(0, Math.min(1, t)));
+    }
+
+    // Generate a lightning bolt path between two points
+    function generateBolt(x1, y1, x2, y2, displacement, minSegment) {
+      const points = [{ x: x1, y: y1 }];
+
+      function subdivide(ax, ay, bx, by, disp) {
+        if (disp < minSegment) {
+          points.push({ x: bx, y: by });
+          return;
+        }
+        const mx = (ax + bx) / 2 + (Math.random() - 0.5) * disp;
+        const my = (ay + by) / 2 + (Math.random() - 0.5) * disp;
+        subdivide(ax, ay, mx, my, disp / 2);
+        subdivide(mx, my, bx, by, disp / 2);
+      }
+
+      subdivide(x1, y1, x2, y2, displacement);
+      return points;
+    }
+
+    function drawBolt(points, color, width, glowSize) {
+      ctx.save();
+      ctx.shadowColor = color;
+      ctx.shadowBlur = glowSize;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Spawn floating sparks in the DOM
+    function spawnSpark() {
+      const spark = document.createElement('div');
+      spark.className = 'spark';
+      const colors = ['#51e2f5', '#a855f7', '#c084fc', '#67e8f9', '#fff'];
+      spark.style.background = colors[Math.floor(Math.random() * colors.length)];
+      spark.style.left = (200 + (Math.random() - 0.5) * 180) + 'px';
+      spark.style.top = (220 + (Math.random() - 0.5) * 60) + 'px';
+      spark.style.boxShadow = `0 0 6px ${spark.style.background}`;
+      document.querySelector('.scene').appendChild(spark);
+      setTimeout(() => spark.remove(), 1000);
+    }
+
+    let frameCount = 0;
+
+    function animate(now) {
+      frameCount++;
+      ctx.clearRect(0, 0, W, H);
+
+      // ── Calculate current separation (0 = closed, 1 = fully open) ──
+      const openness = getSeparation(now);
+
+      // ── Update energy core visibility based on separation ──
+      if (openness < SPARK_THRESHOLD) {
+        energyCore.style.opacity = '0';
+      } else {
+        energyCore.style.opacity = String(Math.min(1, (openness - SPARK_THRESHOLD) * 2));
+      }
+
+      // ── Only draw lightning when plates are separated enough ──
+      if (openness > SPARK_THRESHOLD && frameCount % 3 === 0) {
+        // Intensity scales with openness
+        const intensity = (openness - SPARK_THRESHOLD) / (1 - SPARK_THRESHOLD); // 0→1
+        const numBolts = 1 + Math.floor(intensity * 3 + Math.random() * 2);
+
+        for (let i = 0; i < numBolts; i++) {
+          const startX = W / 2 + (Math.random() - 0.5) * 160;
+          const startY = 60 + Math.random() * 30;
+          const endX = W / 2 + (Math.random() - 0.5) * 160;
+          const endY = 200 + Math.random() * 40;
+
+          const bolt = generateBolt(startX, startY, endX, endY, 60 + Math.random() * 40, 4);
+
+          // Outer glow — alpha scales with intensity
+          drawBolt(bolt, `rgba(168, 85, 247, ${0.15 * intensity})`, 6, 25 * intensity);
+          // Mid glow
+          drawBolt(bolt, `rgba(81, 226, 245, ${0.4 * intensity})`, 2.5, 12 * intensity);
+          // Core
+          drawBolt(bolt, `rgba(255, 255, 255, ${0.9 * intensity})`, 1, 6 * intensity);
+
+          // Branch bolts
+          if (Math.random() > 0.4 && intensity > 0.3) {
+            const branchIdx = Math.floor(bolt.length * (0.3 + Math.random() * 0.4));
+            const bp = bolt[branchIdx];
+            if (bp) {
+              const branchEnd = {
+                x: bp.x + (Math.random() - 0.5) * 80,
+                y: bp.y + 20 + Math.random() * 40
+              };
+              const branch = generateBolt(bp.x, bp.y, branchEnd.x, branchEnd.y, 25, 4);
+              drawBolt(branch, `rgba(81, 226, 245, ${0.3 * intensity})`, 1.5, 8 * intensity);
+              drawBolt(branch, `rgba(255, 255, 255, ${0.6 * intensity})`, 0.5, 4 * intensity);
+            }
+          }
+        }
+      }
+
+      // Spawn sparks only when open
+      if (openness > SPARK_THRESHOLD && frameCount % 8 === 0) spawnSpark();
+
+      requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

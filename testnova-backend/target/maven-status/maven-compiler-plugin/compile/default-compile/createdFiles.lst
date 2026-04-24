@@ -1,0 +1,9 @@
+com\testnova\service\ExecutionService.class
+com\testnova\ai\AutoHealService.class
+com\testnova\storage\ArtifactStorageService.class
+com\testnova\reporting\LogStreamer.class
+com\testnova\api\EngineController.class
+com\testnova\cache\InMemoryCache.class
+com\testnova\engine\PlaywrightWrapper.class
+com\testnova\bdd\CucumberRunner.class
+com\testnova\TestNovaApplication.class

@@ -1,0 +1,32 @@
+name: TestNova Backend CI
+
+on:
+  push:
+    paths:
+      - 'testnova-backend/**'
+  pull_request:
+    paths:
+      - 'testnova-backend/**'
+
+defaults:
+  run:
+    working-directory: testnova-backend
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Install Playwright Browsers
+        run: mvn exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps"
+        
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
