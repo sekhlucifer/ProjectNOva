@@ -27,6 +27,13 @@ const scaleIn = {
 };
 
 /* ===== ANIMATED BACKGROUND (State of the Art Dribbble Motion) ===== */
+/* ===== STATIC SPACE DATA ===== */
+const STATIC_SPACE_STARS = Array.from({ length: 800 }, () => ({
+  x: Math.random(),
+  y: Math.random(),
+  z: Math.random(),
+}));
+
 /* ===== ANIMATED BACKGROUND (Interactive 3D Space Theme) ===== */
 const AnimatedBackground = () => {
   const canvasRef = React.useRef(null);
@@ -44,22 +51,21 @@ const AnimatedBackground = () => {
     setSize();
     window.addEventListener('resize', setSize);
 
-    const stars = Array.from({ length: 800 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      z: Math.random() * canvas.width,
+    // Initial project calculation
+    const runtimeStars = STATIC_SPACE_STARS.map(s => ({
+      x: s.x * canvas.width,
+      y: s.y * canvas.height,
+      z: s.z * canvas.width,
     }));
 
     const executeFrame = () => {
-      ctx.fillStyle = "rgba(5, 6, 15, 0.4)"; // Trails effect
+      ctx.fillStyle = "rgba(5, 6, 15, 0.4)"; 
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      stars.forEach(star => {
-        star.z -= 0.6; // Speed of space travel
+      runtimeStars.forEach(star => {
+        star.z -= 0.6; 
         if (star.z <= 0) {
           star.z = canvas.width;
-          star.x = Math.random() * canvas.width;
-          star.y = Math.random() * canvas.height;
         }
 
         const cx = canvas.width / 2;
@@ -71,9 +77,7 @@ const AnimatedBackground = () => {
         if(px > 0 && px < canvas.width && py > 0 && py < canvas.height) {
             ctx.beginPath();
             const brightness = Math.max(0.1, 1 - star.z / canvas.width);
-            ctx.fillStyle = `rgba(168, 85, 247, ${brightness})`; 
-            if (Math.random() > 0.5) ctx.fillStyle = `rgba(81, 226, 245, ${brightness})`; // Blue and purple stars
-            else if (Math.random() > 0.8) ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`; // White stars
+            ctx.fillStyle = star.x % 2 > 1 ? `rgba(168, 85, 247, ${brightness})` : `rgba(81, 226, 245, ${brightness})`;
             
             ctx.arc(px, py, size, 0, Math.PI * 2);
             ctx.fill();
@@ -174,7 +178,7 @@ const Footer = () => (
         <h4 style={{ color: 'var(--text-main)', marginBottom: '1.5rem', fontWeight: 600, fontSize: '1.1rem' }}>Support</h4>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
           {['Help Center', 'Report a Bug', 'Status Page', 'Support'].map(link => (
-             <li key={link}><a href="#" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.95rem', transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color='var(--color-bright-blue)'} onMouseOut={e => e.target.style.color='var(--text-muted)'}>{link}</a></li>
+             <li key={link}><a href="#" onClick={(e) => e.preventDefault()} style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.95rem', transition: 'color 0.2s', cursor: 'default' }}>{link}</a></li>
           ))}
         </ul>
       </div>
@@ -212,6 +216,12 @@ const STATIC_STARS = Array.from({ length: 60 }, (_, i) => ({
   size: 1 + Math.random() * 2.5,
   delay: Math.random() * 8,
   duration: 2 + Math.random() * 4,
+}));
+
+const STATIC_TRAIL_PARTICLES = Array.from({ length: 5 }, (_, i) => ({
+  id: i,
+  size: 4 + Math.random() * 4,
+  leftOffset: (Math.random() - 0.5) * 40
 }));
 
 /* ===== FLOATING PARTICLES ===== */
@@ -574,19 +584,19 @@ function App() {
             {/* Trail particles that follow UFO on exit */}
             {isSplashExiting && (
               <>
-                {[0, 1, 2, 3, 4].map(i => (
+                {STATIC_TRAIL_PARTICLES.map(p => (
                   <motion.div
-                    key={`trail-${i}`}
+                    key={`trail-${p.id}`}
                     initial={{ opacity: 0.8, y: 0, scale: 1 }}
-                    animate={{ opacity: 0, y: -800 - i * 100, scale: 0 }}
-                    transition={{ duration: 0.7, delay: 0.05 * i, ease: 'easeIn' }}
+                    animate={{ opacity: 0, y: -800 - p.id * 100, scale: 0 }}
+                    transition={{ duration: 0.7, delay: 0.05 * p.id, ease: 'easeIn' }}
                     style={{
                       position: 'absolute',
-                      width: 4 + Math.random() * 4,
-                      height: 4 + Math.random() * 4,
+                      width: p.size,
+                      height: p.size,
                       borderRadius: '50%',
-                      background: ['var(--color-bright-blue)', 'var(--color-teal)', 'var(--color-pink-sand)'][i % 3],
-                      left: `calc(50% + ${(Math.random() - 0.5) * 40}px)`,
+                      background: ['var(--color-bright-blue)', 'var(--color-teal)', 'var(--color-pink-sand)'][p.id % 3],
+                      left: `calc(50% + ${p.leftOffset}px)`,
                       top: '48%',
                       boxShadow: `0 0 12px var(--color-bright-blue)`,
                     }}
