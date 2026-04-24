@@ -356,7 +356,7 @@ function App() {
   const [isSplashExiting, setIsSplashExiting] = useState(false);
   const [currentView, setCurrentView] = useState('landing');
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [, setIsAuthenticated] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
@@ -1181,7 +1181,7 @@ function App() {
                           { type: 'Type Text', icon: '\u2328', color: 'var(--color-plum)' },
                           { type: 'Assert Visible', icon: '\u2705', color: 'var(--pass-green)' },
                           { type: 'Wait For...', icon: '\u23F3', color: 'var(--warning-amber)' },
-                        ].map((block, i) => (
+                        ].map((block) => (
                           <motion.div
                             key={block.type}
                             draggable
