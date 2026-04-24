@@ -24,7 +24,7 @@ public class ArtifactStorageService {
 
     public void uploadTraceFile(String sessionId, Path filePath) {
         String key = String.format("traces/%s/%s", sessionId, filePath.getFileName().toString());
-        
+
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)

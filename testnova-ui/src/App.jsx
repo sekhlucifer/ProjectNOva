@@ -434,6 +434,32 @@ function App() {
       }]);
     }
   };
+  const [bddPrompt, setBddPrompt] = useState('');
+  const [generatedGherkin, setGeneratedGherkin] = useState('');
+  const [isGeneratingBdd, setIsGeneratingBdd] = useState(false);
+
+  const generateBdd = async () => {
+    if (!bddPrompt) return;
+    setIsGeneratingBdd(true);
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/ai/bdd/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: bddPrompt
+      });
+      const result = await response.text();
+      setGeneratedGherkin(result);
+      setLogs(prev => [...prev, {
+        time: new Date().toLocaleTimeString(),
+        type: 'info',
+        text: `[AI MAGIC] Successfully generated BDD Scenario.`
+      }]);
+    } catch (error) {
+      alert(`AI generation failed: ${error.message}`);
+    } finally {
+      setIsGeneratingBdd(false);
+    }
+  };
 
 
   const allStatusCodes = [
@@ -993,6 +1019,7 @@ function App() {
                   { key: 'builder', icon: '\uD83E\uDDE9', label: 'Visual Builder' },
                   { key: 'config', icon: '\u2699', label: 'Configuration' },
                   { key: 'import', icon: '\uD83D\uDCE5', label: 'Test Data & Copilot' },
+                  { key: 'bdd', icon: '\uD83E\uDDD9', label: 'Magic BDD' },
                   { key: 'traces', icon: '\uD83D\uDD0D', label: 'Trace Viewer' },
                   { key: 'activity', icon: '\uD83D\uDCCB', label: 'Activity Log' },
                 ].map(tab => (
@@ -1326,7 +1353,75 @@ function App() {
                   </motion.div>
                 )}
 
+                {/* --- MAGIC BDD --- */}
+                {activeTab === 'bdd' && (
+                  <motion.div key="bdd" variants={staggerContainer} initial="hidden" animate="show" exit={{ opacity: 0 }} style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)', gap: '2rem' }}>
+                    <motion.div variants={fadeSlideRight}>
+                      <GlassPanel style={{ padding: '2rem', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                          <span style={{ fontSize: '2rem' }}>{"\uD83E\uDDD9"}</span>
+                          <div>
+                            <h3 style={{ margin: 0, color: 'var(--color-teal)' }}>Story Assistant</h3>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Describe what you want to test in plain English.</p>
+                          </div>
+                        </div>
+                        
+                        <div className="input-group" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                          <label className="input-label">Your Feature Story</label>
+                          <textarea 
+                            className="input-field" 
+                            value={bddPrompt}
+                            onChange={(e) => setBddPrompt(e.target.value)}
+                            placeholder="Example: I want to test the shopping cart. A user should be able to add an iPhone, use a 'SUMMER50' code, and see the total price drop by half."
+                            style={{ flex: 1, minHeight: '300px', resize: 'none', lineHeight: '1.6', fontSize: '1rem', padding: '1.5rem' }}
+                          />
+                        </div>
+
+                        <motion.button
+                          whileHover={{ scale: 1.02, boxShadow: '0 0 35px rgba(81, 226, 245, 0.4)' }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={generateBdd}
+                          disabled={isGeneratingBdd}
+                          className="btn btn-primary"
+                          style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, var(--color-teal), var(--color-plum))', fontWeight: 700, fontSize: '1.1rem' }}
+                        >
+                          {isGeneratingBdd ? "\u2728 Dreaming up your test..." : "\uD83E\uDDE9 Generate Test Plan"}
+                        </motion.button>
+                      </GlassPanel>
+                    </motion.div>
+
+                    <motion.div variants={fadeSlideUp}>
+                      <GlassPanel style={{ padding: '2rem', height: '100%', display: 'flex', flexDirection: 'column', borderLeft: '3px solid var(--color-plum)' }}>
+                        <h3 style={{ marginBottom: '1.5rem', color: 'var(--color-plum)', display: 'flex', justifyContent: 'space-between' }}>
+                          Visual Test Plan
+                          {generatedGherkin && <span style={{ fontSize: '0.8rem', color: 'var(--pass-green)', fontWeight: 'normal' }}>Ready for Automation</span>}
+                        </h3>
+
+                        {!generatedGherkin ? (
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', border: '2px dashed var(--border-subtle)', borderRadius: '12px' }}>
+                             <motion.span animate={{ opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 2, repeat: Infinity }} style={{ fontSize: '3rem', marginBottom: '1rem' }}>{"\u2728"}</motion.span>
+                             Your AI-generated Gherkin will appear here.
+                          </div>
+                        ) : (
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div className="tv-console" style={{ flex: 1, background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '10px', fontSize: '0.95rem', overflowY: 'auto' }}>
+                              <pre style={{ margin: 0, whiteSpace: 'pre-wrap', color: 'var(--color-dusty-white)', fontFamily: 'monospace' }}>
+                                {generatedGherkin}
+                              </pre>
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                              <button className="btn" style={{ flex: 1 }} onClick={() => { navigator.clipboard.writeText(generatedGherkin); alert("Copied to clipboard!"); }}>Copy Gherkin</button>
+                              <button className="btn btn-primary" style={{ flex: 1, background: 'linear-gradient(135deg, var(--color-plum), var(--color-pink))' }}>Save to Feature File</button>
+                            </div>
+                          </div>
+                        )}
+                      </GlassPanel>
+                    </motion.div>
+                  </motion.div>
+                )}
+
                 {/* --- TRACES --- */}
+
                 {activeTab === 'traces' && (
                   <motion.div key="traces" variants={staggerContainer} initial="hidden" animate="show" exit={{ opacity: 0 }} className="grid-traces">
                     <motion.div variants={fadeSlideRight}>
